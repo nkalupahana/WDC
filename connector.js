@@ -1,52 +1,69 @@
+/* global tableau $ */
+
 (function() {
+    var API_KEY = "c5a50d083981d1ecad8c5b22c76d2762";
+    
+    var cols = [{
+            id: "time",
+            dataType: tableau.dataTypeEnum.int
+        }, {
+            id: "summary",
+            alias: "summary",
+            dataType: tableau.dataTypeEnum.string
+        }, {
+            id: "precipProbability",
+            alias: "precipProbability",
+            dataType: tableau.dataTypeEnum.float
+        }, {
+            id: "humidity",
+            alias: "humidity",
+            dataType: tableau.dataTypeEnum.float
+        }, {
+            id: "pressure",
+            alias: "pressure",
+            dataType: tableau.dataTypeEnum.float
+        }, {
+            id: "cloudCover",
+            alias: "cloudCover",
+            dataType: tableau.dataTypeEnum.float
+        }, {
+            id: "visibility",
+            alias: "visibility",
+            dataType: tableau.dataTypeEnum.int
+        }, {
+            id: "temperature",
+            alias: "temperature",
+            dataType: tableau.dataTypeEnum.float
+        }];
+    
     // Create the connector object
     var myConnector = tableau.makeConnector();
 
     // Define the schema
     myConnector.getSchema = function(schemaCallback) {
-        /* Schema example:
-        
-        var cols = [{
-            id: "id",
-            dataType: tableau.dataTypeEnum.string
-        }, {
-            id: "mag",
-            alias: "magnitude",
-            dataType: tableau.dataTypeEnum.float
-        }, {
-            id: "title",
-            alias: "title",
-            dataType: tableau.dataTypeEnum.string
-        }, {
-            id: "location",
-            dataType: tableau.dataTypeEnum.geometry
-        }];
-
         var tableSchema = {
-            id: "earthquakeFeed",
-            alias: "Earthquakes with magnitude greater than 4.5 in the last seven days",
+            id: "darkskyData",
+            alias: "Forecast data from Dark Sky",
             columns: cols
         };
-        
-        */
 
         schemaCallback([tableSchema]);
     };
 
     // Download the data
     myConnector.getData = function(table, doneCallback) {
-        $.getJSON("URL", function(resp) {
-            var feat = resp.features,
-                tableData = [];
+        $.getJSON(`https://api.darksky.net/forecast/${API_KEY}/45.535122,-122.948361`, function(resp) {
+           let data = resp.hourly.data.concat(resp.daily.data);
+           let tableData = {};
+           
+            for (let item of data) {
+                let obj = {};
+                
+                for (let attributeToAdd of cols) {
+                    obj[attributeToAdd.id] = item[attributeToAdd.id];
+                }
 
-            // Iterate over the JSON object
-            for (var i = 0, len = feat.length; i < len; i++) {
-                tableData.push({
-                    "id": feat[i].id,
-                    "mag": feat[i].properties.mag,
-                    "title": feat[i].properties.title,
-                    "location": feat[i].geometry
-                });
+                tableData.push(obj);
             }
 
             table.appendRows(tableData);
@@ -59,7 +76,7 @@
     // Create event listeners for when the user submits the form
     $(document).ready(function() {
         $("#submitButton").click(function() {
-            tableau.connectionName = "Connection Name"; // This will be the data source name in Tableau
+            tableau.connectionName = "Dark Sky Connector"; // This will be the data source name in Tableau
             tableau.submit(); // This sends the connector object to Tableau
         });
     });
