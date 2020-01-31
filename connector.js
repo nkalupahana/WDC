@@ -1,40 +1,22 @@
 /* global tableau reqwest */
 
 (function() {
-    // Dark Sky API Key
-    var API_KEY = "c5a50d083981d1ecad8c5b22c76d2762";
-    
-    // Schema for data to get from Dark Sky JSON
+    // Schema for data to get from NWS GeoJSON
     var cols = [{
-            id: "time",
+            id: "validTime",
+            alias: "Time",
             dataType: tableau.dataTypeEnum.datetime
         }, {
-            id: "summary",
-            alias: "summary",
-            dataType: tableau.dataTypeEnum.string
-        }, {
-            id: "precipProbability",
-            alias: "precipProbability",
-            dataType: tableau.dataTypeEnum.float
-        }, {
-            id: "humidity",
-            alias: "humidity",
-            dataType: tableau.dataTypeEnum.float
-        }, {
-            id: "pressure",
-            alias: "pressure",
-            dataType: tableau.dataTypeEnum.float
-        }, {
-            id: "cloudCover",
-            alias: "cloudCover",
-            dataType: tableau.dataTypeEnum.float
-        }, {
-            id: "visibility",
-            alias: "visibility",
-            dataType: tableau.dataTypeEnum.int
-        }, {
             id: "temperature",
-            alias: "temperature",
+            alias: "Temperature",
+            dataType: tableau.dataTypeEnum.float
+        }, {
+            id: "relativeHumidity",
+            alias: "Humidity",
+            dataType: tableau.dataTypeEnum.float
+        }, {
+            id: "dewpoint",
+            alias: "dewPoint",
             dataType: tableau.dataTypeEnum.float
         }];
     
@@ -44,8 +26,8 @@
     // Define schema
     connector.getSchema = function(schemaCallback) {
         var tableSchema = {
-            id: "darkskyData",
-            alias: "Forecast data from Dark Sky",
+            id: "nwsData",
+            alias: "Forecast data from the NOAA National Weather Service",
             columns: cols
         };
 
@@ -55,36 +37,39 @@
     // Download and format data
     connector.getData = function(table, doneCallback) {
         reqwest({
-            url: `https://api.darksky.net/forecast/${API_KEY}/45.535122,-122.948361`,
-            type: "jsonp",
+            url: `https://api.weather.gov/gridpoints/PQR/103,106`,
+            crossOrigin: true,
             success: resp => {
                 // Combine hourly and daily data
-                let data = resp.hourly.data.concat(resp.daily.data);
+                let data = resp.properties;
                 let tableData = [];
                 
                 // Format data as necessary
-                for (let item of data) {
-                    let obj = {};
-                    
-                    // Cycle through data and pick out pieces in schema
-                    for (let attributeToAdd of cols) {
-                        if (attributeToAdd.id == "time") {
-                            // Create formatted DateTime object for Tableau
-                            let tobj = new Date(item[attributeToAdd.id] * 1000);
-                            obj[attributeToAdd.id] = tobj.toLocaleDateString() + " " + tobj.toLocaleTimeString();
-                        } else if (attributeToAdd.id == "temperature") {
-                            // Average temperature if not included in Dark Sky
-                            if (Object.keys(item).includes("temperature")) {
-                                obj[attributeToAdd.id] = item[attributeToAdd.id];
-                            } else {
-                                obj[attributeToAdd.id] = (item["temperatureMax"] + item["temperatureMin"]) / 2;
-                            }
-                        } else {
-                            obj[attributeToAdd.id] = item[attributeToAdd.id];
-                        }
+                for (let col of cols) {
+                    if (col.id == "validTime") {
+                        continue;
                     }
                     
-                    tableData.push(obj);
+                    for (let value of data[col.id]["values"]) {
+                        let tobj = new Date(value.validTime.split("/")[0]);
+                        let tstring = tobj.toLocaleDateString() + " " + tobj.toLocaleTimeString();
+                        
+                        let index = tableData.findIndex(obj => {
+                           return obj.validTime == tstring; 
+                        });
+                        
+                        if (index == -1) {
+                            tableData.push({
+                                validTime: tstring
+                            });
+                            
+                            index = tableData.findIndex(obj => {
+                               return obj.validTime == tstring;
+                            });
+                        }
+                        
+                        tableData[index][col.id] = value.value;
+                    }
                 }
                 
                 // Send data to Tableau and mark as complete
@@ -108,7 +93,7 @@
     function ready() {
         document.getElementById("submitButton").addEventListener("click", () => {
             // Set data source name and send to Tableau
-            tableau.connectionName = "Dark Sky Connector";
+            tableau.connectionName = "NWS Connector";
             tableau.submit();
         });
     }
