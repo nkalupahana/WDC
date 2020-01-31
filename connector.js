@@ -36,10 +36,10 @@
         }];
     
     // Create the connector object
-    var myConnector = tableau.makeConnector();
+    var connector = tableau.makeConnector();
 
     // Define the schema
-    myConnector.getSchema = function(schemaCallback) {
+    connector.getSchema = function(schemaCallback) {
         var tableSchema = {
             id: "darkskyData",
             alias: "Forecast data from Dark Sky",
@@ -50,11 +50,11 @@
     };
 
     // Download the data
-    myConnector.getData = function(table, doneCallback) {
+    connector.getData = function(table, doneCallback) {
         reqwest({
             url: "https://api.darksky.net/forecast/c5a50d083981d1ecad8c5b22c76d2762/45.535122,-122.948361",
             type: "jsonp",
-            success: function(resp) {
+            success: resp => {
                 let data = resp.hourly.data.concat(resp.daily.data);
                 let tableData = [];
                 
@@ -85,13 +85,21 @@
         });
     };
 
-    tableau.registerConnector(myConnector);
+    tableau.registerConnector(connector);
+    
+    if (document.readyState != 'loading'){
+        ready();
+    } else {
+        document.addEventListener('DOMContentLoaded', ready);
+    }
+
 
     // Create event listeners for when the user submits the form
-    $(document).ready(function() {
-        $("#submitButton").click(function() {
+    function ready() {
+        document.getElementById("submitButton").addEventListener("click", () => {
             tableau.connectionName = "Dark Sky Connector"; // This will be the data source name in Tableau
             tableau.submit(); // This sends the connector object to Tableau
         });
-    });
+    }
+    
 })();
