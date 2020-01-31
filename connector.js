@@ -40,24 +40,29 @@
             url: `https://api.weather.gov/gridpoints/PQR/103,106`,
             crossOrigin: true,
             success: resp => {
-                // Combine hourly and daily data
+                // Prepare datasets
                 let data = resp.properties;
                 let tableData = [];
                 
-                // Format data as necessary
+                // Format data
+                // For each data type we're tracking
                 for (let col of cols) {
+                    // Ignore time -- we're dealing with that separately
                     if (col.id == "validTime") {
                         continue;
                     }
                     
+                    // For each data point
                     for (let value of data[col.id]["values"]) {
                         let tobj = new Date(value.validTime.split("/")[0]);
                         let tstring = tobj.toLocaleDateString() + " " + tobj.toLocaleTimeString();
                         
+                        // Look for the time that data point occured in our master array
                         let index = tableData.findIndex(obj => {
                            return obj.validTime == tstring; 
                         });
                         
+                        // Create an object with the time if not existant
                         if (index == -1) {
                             tableData.push({
                                 validTime: tstring
@@ -68,6 +73,7 @@
                             });
                         }
                         
+                        // Insert data into object with correspoinding time
                         tableData[index][col.id] = value.value;
                     }
                 }
