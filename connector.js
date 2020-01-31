@@ -1,11 +1,10 @@
-/* global tableau $ */
+/* global tableau reqwest */
 
 (function() {
     var API_KEY = "c5a50d083981d1ecad8c5b22c76d2762";
-    
     var cols = [{
             id: "time",
-            dataType: tableau.dataTypeEnum.int
+            dataType: tableau.dataTypeEnum.datetime
         }, {
             id: "summary",
             alias: "summary",
@@ -52,22 +51,37 @@
 
     // Download the data
     myConnector.getData = function(table, doneCallback) {
-        $.getJSON(`https://api.darksky.net/forecast/${API_KEY}/45.535122,-122.948361`, function(resp) {
-           let data = resp.hourly.data.concat(resp.daily.data);
-           let tableData = {};
-           
-            for (let item of data) {
-                let obj = {};
+        reqwest({
+            url: "https://api.darksky.net/forecast/c5a50d083981d1ecad8c5b22c76d2762/45.535122,-122.948361",
+            type: "jsonp",
+            success: function(resp) {
+                let data = resp.hourly.data.concat(resp.daily.data);
+                let tableData = [];
                 
-                for (let attributeToAdd of cols) {
-                    obj[attributeToAdd.id] = item[attributeToAdd.id];
+                for (let item of data) {
+                    let obj = {};
+                    
+                    for (let attributeToAdd of cols) {
+                        if (attributeToAdd.id == "time") {
+                            let tobj = new Date(item[attributeToAdd.id] * 1000);
+                            obj[attributeToAdd.id] = tobj.toLocaleDateString() + " " + tobj.toLocaleTimeString();
+                        } else if (attributeToAdd.id == "temperature") {
+                            if (Object.keys(item).includes("temperature")) {
+                                obj[attributeToAdd.id] = item[attributeToAdd.id];
+                            } else {
+                                obj[attributeToAdd.id] = (item["temperatureMax"] + item["temperatureMin"]) / 2;
+                            }
+                        } else {
+                            obj[attributeToAdd.id] = item[attributeToAdd.id];
+                        }
+                    }
+                    
+                    tableData.push(obj);
                 }
-
-                tableData.push(obj);
+                
+                table.appendRows(tableData);
+                doneCallback();
             }
-
-            table.appendRows(tableData);
-            doneCallback();
         });
     };
 
