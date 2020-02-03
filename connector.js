@@ -16,16 +16,15 @@
         }, {
             id: "precipProbability",
             alias: "Precipitation Probability",
-            dataType: tableau.dataTypeEnum.float,
-            numberFormat: tableau.numberFormatEnum.percentage
+            dataType: tableau.dataTypeEnum.float
         }, {
             id: "precipIntensity",
             alias: "Precipitation Intensity",
-            dataType: tableau.dataTypeEnum.float,
+            dataType: tableau.dataTypeEnum.float
         }, {
             id: "precipType",
             alias: "Precipitation Type",
-            dataType: tableau.dataTypeEnum.string,
+            dataType: tableau.dataTypeEnum.string
         }, {
             id: "temperature",
             alias: "Temperature",
@@ -41,8 +40,7 @@
         }, {
             id: "humidity",
             alias: "Humidity",
-            dataType: tableau.dataTypeEnum.float,
-            numberFormat: tableau.numberFormatEnum.percentage
+            dataType: tableau.dataTypeEnum.float
         }, {
             id: "pressure",
             alias: "Pressure",
@@ -62,8 +60,7 @@
         }, {
             id: "cloudCover",
             alias: "Cloud Cover",
-            dataType: tableau.dataTypeEnum.float,
-            numberFormat: tableau.numberFormatEnum.percentage
+            dataType: tableau.dataTypeEnum.float
         }, {
             id: "uvIndex",
             alias: "UV Index",
@@ -91,15 +88,14 @@
     // Download and format data
     connector.getData = function(table, doneCallback) {
         reqwest({
-            url: `https://api.darksky.net/forecast/${API_KEY}/45.535122,-122.948361`,
+            url: `https://api.darksky.net/forecast/${API_KEY}/45.535122,-122.948361?extend=hourly&exclude=currently,minutely,daily,alerts,flags`,
             type: "jsonp",
             success: resp => {
                 // Combine hourly and daily data
-                let data = resp.hourly.data.concat(resp.daily.data);
                 let tableData = [];
                 
                 // Format data as necessary
-                for (let item of data) {
+                for (let item of resp.hourly.data) {
                     let obj = {};
                     
                     // Cycle through data and pick out pieces in schema
@@ -108,13 +104,6 @@
                             // Create formatted DateTime object for Tableau
                             let tobj = new Date(item[attributeToAdd.id] * 1000);
                             obj[attributeToAdd.id] = tobj.toLocaleDateString() + " " + tobj.toLocaleTimeString();
-                        } else if (attributeToAdd.id.toLowerCase().includes("temperature")) {
-                            // Average temperature if not included in Dark Sky
-                            if (Object.keys(item).includes(attributeToAdd.id)) {
-                                obj[attributeToAdd.id] = item[attributeToAdd.id];
-                            } else {
-                                obj[attributeToAdd.id] = (item[attributeToAdd.id + "High"] + item[attributeToAdd.id + "Low"]) / 2;
-                            }
                         } else {
                             obj[attributeToAdd.id] = item[attributeToAdd.id];
                         }
