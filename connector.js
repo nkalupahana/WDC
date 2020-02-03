@@ -19,6 +19,26 @@
             dataType: tableau.dataTypeEnum.float,
             numberFormat: tableau.numberFormatEnum.percentage
         }, {
+            id: "precipIntensity",
+            alias: "Precipitation Intensity",
+            dataType: tableau.dataTypeEnum.float,
+        }, {
+            id: "precipType",
+            alias: "Precipitation Type",
+            dataType: tableau.dataTypeEnum.string,
+        }, {
+            id: "temperature",
+            alias: "Temperature",
+            dataType: tableau.dataTypeEnum.float
+        }, {
+            id: "apparentTemperature",
+            alias: "Apparent Temperature",
+            dataType: tableau.dataTypeEnum.float
+        }, {
+            id: "dewPoint",
+            alias: "Dew Point",
+            dataType: tableau.dataTypeEnum.float
+        }, {
             id: "humidity",
             alias: "Humidity",
             dataType: tableau.dataTypeEnum.float,
@@ -28,18 +48,30 @@
             alias: "Pressure",
             dataType: tableau.dataTypeEnum.float
         }, {
+            id: "windSpeed",
+            alias: "Wind Speed",
+            dataType: tableau.dataTypeEnum.float
+        }, {
+            id: "windGust",
+            alias: "Wind Gust",
+            dataType: tableau.dataTypeEnum.float
+        }, {
+            id: "windBearing",
+            alias: "Wind Bearing",
+            dataType: tableau.dataTypeEnum.int
+        }, {
             id: "cloudCover",
             alias: "Cloud Cover",
             dataType: tableau.dataTypeEnum.float,
             numberFormat: tableau.numberFormatEnum.percentage
         }, {
+            id: "uvIndex",
+            alias: "UV Index",
+            dataType: tableau.dataTypeEnum.int
+        }, {
             id: "visibility",
             alias: "Visibility",
             dataType: tableau.dataTypeEnum.int
-        }, {
-            id: "temperature",
-            alias: "Temperature",
-            dataType: tableau.dataTypeEnum.float
         }];
     
     // Create the connector object
@@ -49,7 +81,7 @@
     connector.getSchema = function(schemaCallback) {
         var tableSchema = {
             id: "darkskyData",
-            alias: "Forecast data from Dark Sky",
+            alias: "weather",
             columns: cols
         };
 
@@ -76,12 +108,12 @@
                             // Create formatted DateTime object for Tableau
                             let tobj = new Date(item[attributeToAdd.id] * 1000);
                             obj[attributeToAdd.id] = tobj.toLocaleDateString() + " " + tobj.toLocaleTimeString();
-                        } else if (attributeToAdd.id == "temperature") {
+                        } else if (attributeToAdd.id.toLowerCase().includes("temperature")) {
                             // Average temperature if not included in Dark Sky
-                            if (Object.keys(item).includes("temperature")) {
+                            if (Object.keys(item).includes(attributeToAdd.id)) {
                                 obj[attributeToAdd.id] = item[attributeToAdd.id];
                             } else {
-                                obj[attributeToAdd.id] = (item["temperatureMax"] + item["temperatureMin"]) / 2;
+                                obj[attributeToAdd.id] = (item[attributeToAdd.id + "High"] + item[attributeToAdd.id + "Low"]) / 2;
                             }
                         } else {
                             obj[attributeToAdd.id] = item[attributeToAdd.id];
