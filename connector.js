@@ -7,34 +7,38 @@
     // Schema for data to get from Dark Sky JSON
     var cols = [{
             id: "time",
+            alias: "Time",
             dataType: tableau.dataTypeEnum.datetime
         }, {
             id: "summary",
-            alias: "summary",
+            alias: "Summary",
             dataType: tableau.dataTypeEnum.string
         }, {
             id: "precipProbability",
-            alias: "precipProbability",
-            dataType: tableau.dataTypeEnum.float
+            alias: "Precipitation Probability",
+            dataType: tableau.dataTypeEnum.float,
+            numberFormat: tableau.numberFormatEnum.percentage
         }, {
             id: "humidity",
-            alias: "humidity",
-            dataType: tableau.dataTypeEnum.float
+            alias: "Humidity",
+            dataType: tableau.dataTypeEnum.float,
+            numberFormat: tableau.numberFormatEnum.percentage
         }, {
             id: "pressure",
-            alias: "pressure",
+            alias: "Pressure",
             dataType: tableau.dataTypeEnum.float
         }, {
             id: "cloudCover",
-            alias: "cloudCover",
-            dataType: tableau.dataTypeEnum.float
+            alias: "Cloud Cover",
+            dataType: tableau.dataTypeEnum.float,
+            numberFormat: tableau.numberFormatEnum.percentage
         }, {
             id: "visibility",
-            alias: "visibility",
+            alias: "Visibility",
             dataType: tableau.dataTypeEnum.int
         }, {
             id: "temperature",
-            alias: "temperature",
+            alias: "Temperature",
             dataType: tableau.dataTypeEnum.float
         }];
     
