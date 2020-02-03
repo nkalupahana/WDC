@@ -16,16 +16,15 @@
         }, {
             id: "precipProbability",
             alias: "Precipitation Probability",
-            dataType: tableau.dataTypeEnum.float,
-            numberFormat: tableau.numberFormatEnum.percentage
+            dataType: tableau.dataTypeEnum.float
         }, {
             id: "precipIntensity",
             alias: "Precipitation Intensity",
-            dataType: tableau.dataTypeEnum.float,
+            dataType: tableau.dataTypeEnum.float
         }, {
             id: "precipType",
             alias: "Precipitation Type",
-            dataType: tableau.dataTypeEnum.string,
+            dataType: tableau.dataTypeEnum.string
         }, {
             id: "temperature",
             alias: "Temperature",
@@ -41,8 +40,7 @@
         }, {
             id: "humidity",
             alias: "Humidity",
-            dataType: tableau.dataTypeEnum.float,
-            numberFormat: tableau.numberFormatEnum.percentage
+            dataType: tableau.dataTypeEnum.float
         }, {
             id: "pressure",
             alias: "Pressure",
@@ -62,8 +60,7 @@
         }, {
             id: "cloudCover",
             alias: "Cloud Cover",
-            dataType: tableau.dataTypeEnum.float,
-            numberFormat: tableau.numberFormatEnum.percentage
+            dataType: tableau.dataTypeEnum.float
         }, {
             id: "uvIndex",
             alias: "UV Index",
