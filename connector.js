@@ -81,7 +81,7 @@
     connector.getSchema = function(schemaCallback) {
         var tableSchema = {
             id: "darkskyData",
-            alias: "weather",
+            alias: "Weather",
             columns: cols
         };
 
