@@ -88,7 +88,7 @@
     // Download and format data
     connector.getData = function(table, doneCallback) {
         reqwest({
-            url: `https://api.darksky.net/forecast/${API_KEY}/45.535122,-122.948361`,
+            url: `https://api.darksky.net/forecast/${API_KEY}/45.535122,-122.948361?extend=hourly&exclude=currently,minutely,daily,alerts,flags`,
             type: "jsonp",
             success: resp => {
                 // Combine hourly and daily data
@@ -105,13 +105,6 @@
                             // Create formatted DateTime object for Tableau
                             let tobj = new Date(item[attributeToAdd.id] * 1000);
                             obj[attributeToAdd.id] = tobj.toLocaleDateString() + " " + tobj.toLocaleTimeString();
-                        } else if (attributeToAdd.id.toLowerCase().includes("temperature")) {
-                            // Average temperature if not included in Dark Sky
-                            if (Object.keys(item).includes(attributeToAdd.id)) {
-                                obj[attributeToAdd.id] = item[attributeToAdd.id];
-                            } else {
-                                obj[attributeToAdd.id] = (item[attributeToAdd.id + "High"] + item[attributeToAdd.id + "Low"]) / 2;
-                            }
                         } else {
                             obj[attributeToAdd.id] = item[attributeToAdd.id];
                         }
