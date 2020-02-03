@@ -92,11 +92,10 @@
             type: "jsonp",
             success: resp => {
                 // Combine hourly and daily data
-                let data = resp.hourly.data.concat(resp.daily.data);
                 let tableData = [];
                 
                 // Format data as necessary
-                for (let item of data) {
+                for (let item of resp.hourly.data) {
                     let obj = {};
                     
                     // Cycle through data and pick out pieces in schema
