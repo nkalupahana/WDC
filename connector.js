@@ -3,13 +3,8 @@
 (function() {
     // Dark Sky API Key
     var API_KEY = "c5a50d083981d1ecad8c5b22c76d2762";
-    // Location of forecast (currently KHIO)
-    var LOCATION = "45.535122,-122.948361";
     
-    /* Schema for data to get from Dark Sky JSON */
-    // id: attribute in Dark Sky JSON
-    // alias: name of data value in Tableau table
-    // dataType: Data type of value (see all at https://tableau.github.io/webdataconnector/docs/api_ref.html#webdataconnectorapi.datatypeenum)
+    // Schema for data to get from Dark Sky JSON
     var cols = [{
             id: "time",
             alias: "Time",
@@ -80,32 +75,28 @@
     var connector = tableau.makeConnector();
 
     // Define schema
-    connector.getSchema = surfaceSchema => {
-        /* Create schema with columns & some other attributes */
-        // alias: Name of Data Source in Tableau
+    connector.getSchema = function(schemaCallback) {
         var tableSchema = {
             id: "darkskyData",
             alias: "Weather",
             columns: cols
         };
 
-        // Surface schema to Tableau
-        surfaceSchema([tableSchema]);
+        schemaCallback([tableSchema]);
     };
 
     // Download and format data
-    connector.getData = (table, done) => {
-        // Get data (gets 7-day hourly forcast (extended); excludes all other data)
-        // Format: JSON-P (circumvents Cross-Origin exceptions)
+    connector.getData = function(table, doneCallback) {
         reqwest({
-            url: `https://api.darksky.net/forecast/${API_KEY}/${LOCATION}?extend=hourly&exclude=currently,minutely,daily,alerts,flags`,
+            url: `https://api.darksky.net/forecast/${API_KEY}/45.535122,-122.948361?extend=hourly&exclude=currently,minutely,daily,alerts,flags`,
             type: "jsonp",
             success: resp => {
-                // Full table data storage
+                // Combine hourly and daily data
+                let data = resp.hourly.data.concat(resp.daily.data);
                 let tableData = [];
                 
-                // Format hourly data as necessary
-                for (let item of resp.hourly.data) {
+                // Format data as necessary
+                for (let item of data) {
                     let obj = {};
                     
                     // Cycle through data and pick out pieces in schema
@@ -115,27 +106,24 @@
                             let tobj = new Date(item[attributeToAdd.id] * 1000);
                             obj[attributeToAdd.id] = tobj.toLocaleDateString() + " " + tobj.toLocaleTimeString();
                         } else {
-                            // Move the attribute over
                             obj[attributeToAdd.id] = item[attributeToAdd.id];
                         }
                     }
-
-                    // Save the formatted data object
+                    
                     tableData.push(obj);
                 }
                 
                 // Send data to Tableau and mark as complete
                 table.appendRows(tableData);
-                done();
+                doneCallback();
             }
         });
     };
 
-    // Surface connector to tableau library
     tableau.registerConnector(connector);
     
-    // Run ready() when everything is loaded
-    if (document.readyState != 'loading') {
+    // Register event listener on ready
+    if (document.readyState != 'loading'){
         ready();
     } else {
         document.addEventListener('DOMContentLoaded', ready);
@@ -145,9 +133,8 @@
     // Create event listener for when user requests data
     function ready() {
         document.getElementById("submitButton").addEventListener("click", () => {
-            // Set data source name
+            // Set data source name and send to Tableau
             tableau.connectionName = "Dark Sky Connector";
-            // Submit connector to Tableau
             tableau.submit();
         });
     }
