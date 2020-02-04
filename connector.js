@@ -3,6 +3,7 @@
 (function() {
     // Dark Sky API Key
     var API_KEY = "c5a50d083981d1ecad8c5b22c76d2762";
+    var LOCATION = "45.535122,-122.948361";
     
     // Schema for data to get from Dark Sky JSON
     var cols = [{
@@ -75,7 +76,7 @@
     var connector = tableau.makeConnector();
 
     // Define schema
-    connector.getSchema = function(schemaCallback) {
+    connector.getSchema = schemaCallback => {
         var tableSchema = {
             id: "darkskyData",
             alias: "Weather",
@@ -86,9 +87,9 @@
     };
 
     // Download and format data
-    connector.getData = function(table, doneCallback) {
+    connector.getData = (table, doneCallback) => {
         reqwest({
-            url: `https://api.darksky.net/forecast/${API_KEY}/45.535122,-122.948361?extend=hourly&exclude=currently,minutely,daily,alerts,flags`,
+            url: `https://api.darksky.net/forecast/${API_KEY}/${LOCATION}?extend=hourly&exclude=currently,minutely,daily,alerts,flags`,
             type: "jsonp",
             success: resp => {
                 let tableData = [];
