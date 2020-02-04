@@ -94,11 +94,14 @@
     };
 
     // Download and format data
-    connector.getData = (table, doneCallback) => {
+    connector.getData = (table, done) => {
+        // Get data (gets 7-day hourly forcast (extended); excludes all other data)
+        // Format: JSON-P (circumvents Cross-Origin exceptions)
         reqwest({
             url: `https://api.darksky.net/forecast/${API_KEY}/${LOCATION}?extend=hourly&exclude=currently,minutely,daily,alerts,flags`,
             type: "jsonp",
             success: resp => {
+                // Full table data storage
                 let tableData = [];
                 
                 // Format data as necessary
@@ -112,23 +115,26 @@
                             let tobj = new Date(item[attributeToAdd.id] * 1000);
                             obj[attributeToAdd.id] = tobj.toLocaleDateString() + " " + tobj.toLocaleTimeString();
                         } else {
+                            // Move the attribute over
                             obj[attributeToAdd.id] = item[attributeToAdd.id];
                         }
                     }
                     
+                    // Save the formatted data object
                     tableData.push(obj);
                 }
                 
                 // Send data to Tableau and mark as complete
                 table.appendRows(tableData);
-                doneCallback();
+                done();
             }
         });
     };
 
+    // Surface connector to tableau library
     tableau.registerConnector(connector);
     
-    // Register event listener on ready
+    // Run ready() when everything is loaded
     if (document.readyState != 'loading'){
         ready();
     } else {
@@ -139,8 +145,9 @@
     // Create event listener for when user requests data
     function ready() {
         document.getElementById("submitButton").addEventListener("click", () => {
-            // Set data source name and send to Tableau
+            // Set data source name
             tableau.connectionName = "Dark Sky Connector";
+            // Submit connector to Tableau
             tableau.submit();
         });
     }
