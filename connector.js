@@ -3,9 +3,13 @@
 (function() {
     // Dark Sky API Key
     var API_KEY = "c5a50d083981d1ecad8c5b22c76d2762";
+    // Location of forecast (currently KHIO)
     var LOCATION = "45.535122,-122.948361";
     
-    // Schema for data to get from Dark Sky JSON
+    /* Schema for data to get from Dark Sky JSON */
+    // id: attribute in Dark Sky JSON
+    // alias: name of data value in Tableau table
+    // dataType: Data type of value (see all at https://tableau.github.io/webdataconnector/docs/api_ref.html#webdataconnectorapi.datatypeenum)
     var cols = [{
             id: "time",
             alias: "Time",
@@ -76,14 +80,17 @@
     var connector = tableau.makeConnector();
 
     // Define schema
-    connector.getSchema = schemaCallback => {
+    connector.getSchema = surfaceSchema => {
+        /* Create schema with columns & some other attributes */
+        // alias: Name of Data Source in Tableau
         var tableSchema = {
             id: "darkskyData",
             alias: "Weather",
             columns: cols
         };
 
-        schemaCallback([tableSchema]);
+        // Surface schema to Tableau
+        surfaceSchema([tableSchema]);
     };
 
     // Download and format data
