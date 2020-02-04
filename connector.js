@@ -104,7 +104,7 @@
                 // Full table data storage
                 let tableData = [];
                 
-                // Format data as necessary
+                // Format hourly data as necessary
                 for (let item of resp.hourly.data) {
                     let obj = {};
                     
@@ -119,7 +119,7 @@
                             obj[attributeToAdd.id] = item[attributeToAdd.id];
                         }
                     }
-                    
+
                     // Save the formatted data object
                     tableData.push(obj);
                 }
@@ -135,7 +135,7 @@
     tableau.registerConnector(connector);
     
     // Run ready() when everything is loaded
-    if (document.readyState != 'loading'){
+    if (document.readyState != 'loading') {
         ready();
     } else {
         document.addEventListener('DOMContentLoaded', ready);
