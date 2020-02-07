@@ -4,7 +4,13 @@
     // Dark Sky API Key
     var API_KEY = "c5a50d083981d1ecad8c5b22c76d2762";
     // Location of forecast (currently KHIO)
-    var LOCATION = "45.535122,-122.948361";
+    var LOCATIONS = [
+        {
+            locationName: "KHIO",
+            lat: 45.535122,
+            lng: -122.948361
+        }
+    ];
     
     /* Schema for data to get from Dark Sky JSON */
     // id: attribute in Dark Sky JSON
@@ -14,6 +20,18 @@
             id: "time",
             alias: "Time",
             dataType: tableau.dataTypeEnum.datetime
+        }, {
+            id: "locationName",
+            alias: "Location",
+            dataType: tableau.dataTypeEnum.string
+        }, {
+            id: "lat",
+            alias: "Latitude",
+            dataType: tableau.dataTypeEnum.float
+        }, {
+            id: "lng",
+            alias: "Longitude",
+            dataType: tableau.dataTypeEnum.float
         }, {
             id: "summary",
             alias: "Summary",
@@ -94,41 +112,50 @@
     };
 
     // Download and format data
-    connector.getData = (table, done) => {
-        // Get data (gets 7-day hourly forcast (extended); excludes all other data)
-        // Format: JSON-P (circumvents Cross-Origin exceptions)
-        reqwest({
-            url: `https://api.darksky.net/forecast/${API_KEY}/${LOCATION}?extend=hourly&exclude=currently,minutely,daily,alerts,flags`,
-            type: "jsonp",
-            success: resp => {
-                // Full table data storage
-                let tableData = [];
-                
-                // Format hourly data as necessary
-                for (let item of resp.hourly.data) {
-                    let obj = {};
-                    
-                    // Cycle through data and pick out pieces in schema
-                    for (let attributeToAdd of cols) {
-                        if (attributeToAdd.id == "time") {
-                            // Create formatted DateTime object for Tableau
-                            let tobj = new Date(item[attributeToAdd.id] * 1000);
-                            obj[attributeToAdd.id] = tobj.toLocaleDateString() + " " + tobj.toLocaleTimeString();
-                        } else {
-                            // Move the attribute over
-                            obj[attributeToAdd.id] = item[attributeToAdd.id];
-                        }
-                    }
+    connector.getData = async (table, done) => {
+        for (let loc of LOCATIONS) {
+            // Get data (gets 7-day hourly forcast (extended); excludes all other data)
+            // Format: JSON-P (circumvents Cross-Origin exceptions)
+            await new Promise((resolve, _reject) => {
+                reqwest({
+                    url: `https://api.darksky.net/forecast/${API_KEY}/${String(loc.lat)},${String(loc.lng)}?extend=hourly&exclude=currently,minutely,daily,alerts,flags`,
+                    type: "jsonp",
+                    success: resp => {
+                        // Full table data storage
+                        let tableData = [];
 
-                    // Save the formatted data object
-                    tableData.push(obj);
-                }
-                
-                // Send data to Tableau and mark as complete
-                table.appendRows(tableData);
-                done();
-            }
-        });
+                        // Format hourly data as necessary
+                        for (let item of resp.hourly.data) {
+                            let obj = {};
+
+                            item = {...item, ...loc};
+                            
+                            // Cycle through data and pick out pieces in schema
+                            for (let attributeToAdd of cols) {
+                                if (attributeToAdd.id == "time") {
+                                    // Create formatted DateTime object for Tableau
+                                    let tobj = new Date(item[attributeToAdd.id] * 1000);
+                                    obj[attributeToAdd.id] = tobj.toLocaleDateString() + " " + tobj.toLocaleTimeString();
+                                } else {
+                                    // Move the attribute over
+                                    obj[attributeToAdd.id] = item[attributeToAdd.id];
+                                }
+                            }
+    
+                            // Save the formatted data object
+                            tableData.push(obj);
+                        }
+                        
+                        // Send data to Tableau and mark as complete
+                        table.appendRows(tableData);
+                        resolve();
+                    }
+                });
+            });
+        }
+
+
+        done();
     };
 
     // Surface connector to tableau library
