@@ -9,11 +9,6 @@
             locationName: "KHIO",
             lat: 45.535122,
             lng: -122.948361
-        },
-        {
-            locationName: "roll tide",
-            lat: 45,
-            lng: -122
         }
     ];
     
