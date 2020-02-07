@@ -113,10 +113,12 @@
 
     // Download and format data
     connector.getData = async (table, done) => {
+        let requests = [];
+
         for (let loc of LOCATIONS) {
             // Get data (gets 7-day hourly forcast (extended); excludes all other data)
             // Format: JSON-P (circumvents Cross-Origin exceptions)
-            await new Promise((resolve, _reject) => {
+            request.push(new Promise((resolve, _reject) => {
                 reqwest({
                     url: `https://api.darksky.net/forecast/${API_KEY}/${String(loc.lat)},${String(loc.lng)}?extend=hourly&exclude=currently,minutely,daily,alerts,flags`,
                     type: "jsonp",
@@ -151,10 +153,10 @@
                         resolve();
                     }
                 });
-            });
+            }));
         }
 
-
+        await Promise.all(requests);
         done();
     };
 
