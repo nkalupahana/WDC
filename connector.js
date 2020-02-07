@@ -9,6 +9,11 @@
             locationName: "KHIO",
             lat: 45.535122,
             lng: -122.948361
+        },
+        {
+            locationName: "roll tide",
+            lat: 45,
+            lng: -122
         }
     ];
     
@@ -118,7 +123,7 @@
         for (let loc of LOCATIONS) {
             // Get data (gets 7-day hourly forcast (extended); excludes all other data)
             // Format: JSON-P (circumvents Cross-Origin exceptions)
-            request.push(new Promise((resolve, _reject) => {
+            requests.push(new Promise((resolve, _reject) => {
                 reqwest({
                     url: `https://api.darksky.net/forecast/${API_KEY}/${String(loc.lat)},${String(loc.lng)}?extend=hourly&exclude=currently,minutely,daily,alerts,flags`,
                     type: "jsonp",
