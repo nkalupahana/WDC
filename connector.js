@@ -120,14 +120,14 @@
             // Format: JSON-P (circumvents Cross-Origin exceptions)
             requests.push(new Promise((resolve, _reject) => {
                 reqwest({
-                    url: `https://api.darksky.net/forecast/${API_KEY}/${String(loc.lat)},${String(loc.lng)}?extend=hourly&exclude=currently,minutely,daily,alerts,flags`,
+                    url: `https://api.darksky.net/forecast/${API_KEY}/${String(loc.lat)},${String(loc.lng)}?exclude=currently,minutely,hourly,alerts,flags`,
                     type: "jsonp",
                     success: resp => {
                         // Full table data storage
                         let tableData = [];
 
                         // Format hourly data as necessary
-                        for (let item of resp.hourly.data) {
+                        for (let item of resp.daily.data) {
                             let obj = {};
 
                             item = {...item, ...loc};
@@ -138,6 +138,8 @@
                                     // Create formatted DateTime object for Tableau
                                     let tobj = new Date(item[attributeToAdd.id] * 1000);
                                     obj[attributeToAdd.id] = tobj.toLocaleDateString() + " " + tobj.toLocaleTimeString();
+                                } else if (!Object.keys(item).includes(attributeToAdd.id)) {
+                                    obj[attributeToAdd.id] = (item[attributeToAdd.id + "High"] + item[attributeToAdd.id + "Low"]) / 2;
                                 } else {
                                     // Move the attribute over
                                     obj[attributeToAdd.id] = item[attributeToAdd.id];
