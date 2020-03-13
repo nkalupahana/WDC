@@ -6,7 +6,7 @@
     // Location of forecast (currently KHIO)
     let LOCATIONS = [
         {
-            locationName: "KHIO",
+            locationName: "Hillsboro Airport",
             lat: 45.535122,
             lng: -122.948361
         },
