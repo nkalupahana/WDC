@@ -126,7 +126,7 @@
         },
     ];
 
-    colsDaily = [...colsDaily, ...addToDaily];
+    colsDaily = [...addToDaily, ...colsDaily];
     
     // Create the connector object
     let connector = tableau.makeConnector();
