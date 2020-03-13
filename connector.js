@@ -52,7 +52,8 @@
         }, {
             id: "precipType",
             alias: "Precipitation Type",
-            dataType: tableau.dataTypeEnum.string
+            dataType: tableau.dataTypeEnum.string,
+            phraseify: true
         }, {
             id: "temperature",
             alias: "Temperature",
@@ -208,6 +209,10 @@
                                     }
                                 } else {
                                     // Move the attribute over
+                                    if (attributeToAdd.phraseify === true) {
+                                        item[attributeToAdd.id] = phraseify(item[attributeToAdd.id]);
+                                    }
+
                                     obj[attributeToAdd.id] = item[attributeToAdd.id];
                                 }
                             }
@@ -238,7 +243,6 @@
         document.addEventListener('DOMContentLoaded', ready);
     }
 
-
     // Create event listener for when user requests data
     function ready() {
         document.getElementById("submitButton").addEventListener("click", () => {
@@ -249,4 +253,11 @@
         });
     }
     
+    function phraseify(word) {
+        if (!word) {
+            return null;
+        }
+
+        return word[0].toUpperCase() + word.substr(1);
+    }
 })();
