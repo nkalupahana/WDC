@@ -2,9 +2,9 @@
 
 (function() {
     // Dark Sky API Key
-    var API_KEY = "c5a50d083981d1ecad8c5b22c76d2762";
+    let API_KEY = "c5a50d083981d1ecad8c5b22c76d2762";
     // Location of forecast (currently KHIO)
-    var LOCATIONS = [
+    let LOCATIONS = [
         {
             locationName: "KHIO",
             lat: 45.535122,
@@ -16,7 +16,7 @@
     // id: attribute in Dark Sky JSON
     // alias: name of data value in Tableau table
     // dataType: Data type of value (see all at https://tableau.github.io/webdataconnector/docs/api_ref.html#webdataconnectorapi.datatypeenum)
-    var cols = [{
+    let colsHourly = [{
             id: "time",
             alias: "Time",
             dataType: tableau.dataTypeEnum.datetime
@@ -93,41 +93,94 @@
             alias: "Visibility",
             dataType: tableau.dataTypeEnum.int
         }];
+
+    let colsDaily = colsHourly.filter(o => {
+        return o.id !== 'temperature' && o.id !== 'apparentTemperature';
+    });
+
+    let addToDaily = [
+        {
+            id: "temperatureHigh",
+            alias: "High Temperature",
+            dataType: tableau.dataTypeEnum.float
+        },
+        {
+            id: "temperatureLow",
+            alias: "Low Temperature",
+            dataType: tableau.dataTypeEnum.float
+        },
+        {
+            id: "apparentTemperatureHigh",
+            alias: "Apparent High Temperature",
+            dataType: tableau.dataTypeEnum.float
+        },
+        {
+            id: "apparentTemperatureLow",
+            alias: "Apparent Low Temperature",
+            dataType: tableau.dataTypeEnum.float
+        },
+    ];
+
+    colsDaily = [...colsDaily, ...addToDaily];
     
     // Create the connector object
-    var connector = tableau.makeConnector();
+    let connector = tableau.makeConnector();
 
     // Define schema
     connector.getSchema = surfaceSchema => {
         /* Create schema with columns & some other attributes */
         // alias: Name of Data Source in Tableau
-        var tableSchema = {
-            id: "darkskyData",
-            alias: "Weather",
-            columns: cols
+        let hourlySchema = {
+            id: "darkskyHourly",
+            alias: "Weather - Hourly",
+            columns: colsHourly
+        };
+
+        let dailySchema = {
+            id: "darkskyDaily",
+            alias: "Weather - Daily",
+            columns: colsDaily
         };
 
         // Surface schema to Tableau
-        surfaceSchema([tableSchema]);
+        surfaceSchema([hourlySchema, dailySchema]);
     };
 
     // Download and format data
     connector.getData = async (table, done) => {
         let requests = [];
 
+        let cols;
+        let tableId;
+        if (table.tableInfo.id == "darkskyHourly") {
+            cols = colsHourly;
+            tableId = "hourly";
+        } else {
+            cols = colsDaily;
+            tableId = "daily";
+        }
+
         for (let loc of LOCATIONS) {
             // Get data (gets 7-day hourly forcast (extended); excludes all other data)
             // Format: JSON-P (circumvents Cross-Origin exceptions)
             requests.push(new Promise((resolve, _reject) => {
+                let url;
+
+                if (tableId == "hourly") {
+                    url = `https://api.darksky.net/forecast/${API_KEY}/${String(loc.lat)},${String(loc.lng)}?extend=hourly&exclude=currently,minutely,daily,alerts,flags`;
+                } else {
+                    url = `https://api.darksky.net/forecast/${API_KEY}/${String(loc.lat)},${String(loc.lng)}?exclude=currently,minutely,hourly,alerts,flags`;
+                }
+
                 reqwest({
-                    url: `https://api.darksky.net/forecast/${API_KEY}/${String(loc.lat)},${String(loc.lng)}?extend=hourly&exclude=currently,minutely,daily,alerts,flags`,
+                    url,
                     type: "jsonp",
                     success: resp => {
                         // Full table data storage
                         let tableData = [];
 
                         // Format hourly data as necessary
-                        for (let item of resp.hourly.data) {
+                        for (let item of resp[tableId]["data"]) {
                             let obj = {};
 
                             item = {...item, ...loc};
