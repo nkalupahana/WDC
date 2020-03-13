@@ -18,7 +18,7 @@
     // dataType: Data type of value (see all at https://tableau.github.io/webdataconnector/docs/api_ref.html#webdataconnectorapi.datatypeenum)
     let colsHourly = [{
             id: "time",
-            alias: "Time",
+            alias: "Date",
             dataType: tableau.dataTypeEnum.datetime
         }, {
             id: "locationName",
