@@ -14,6 +14,11 @@
             locationName: "Civic Center",
             lat: 45.522203,
             lng: -122.989419
+        },
+        {
+            locationName: "Fukuroi, Japan",
+            lat: 34.741699, 
+            lng: 137.927428
         }
     ];
     
