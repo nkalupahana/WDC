@@ -19,6 +19,16 @@
             locationName: "Fukuroi, Japan",
             lat: 34.741699, 
             lng: 137.927428
+        },
+        {
+            locationName: "B-town City Hall",
+            lat: 45.490096,
+            lng: -122.807801
+        },
+        {
+            locationName: "Portland City Hall",
+            lat: 45.515024,
+            lng: -122.679165
         }
     ];
     
