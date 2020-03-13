@@ -95,10 +95,15 @@
         }];
 
     let colsDaily = colsHourly.filter(o => {
-        return o.id !== 'temperature' && o.id !== 'apparentTemperature';
+        return o.id !== 'temperature' && o.id !== 'apparentTemperature' && o.id !== 'time';
     });
 
     let addToDaily = [
+        {
+            id: "time",
+            alias: "Date",
+            dataType: tableau.dataTypeEnum.date
+        },
         {
             id: "temperatureHigh",
             alias: "High Temperature",
@@ -190,7 +195,12 @@
                                 if (attributeToAdd.id == "time") {
                                     // Create formatted DateTime object for Tableau
                                     let tobj = new Date(item[attributeToAdd.id] * 1000);
-                                    obj[attributeToAdd.id] = tobj.toLocaleDateString() + " " + tobj.toLocaleTimeString();
+
+                                    if (tableId == "hourly") {
+                                        obj[attributeToAdd.id] = tobj.toLocaleDateString() + " " + tobj.toLocaleTimeString();
+                                    } else {
+                                        obj[attributeToAdd.id] = tobj.toLocaleDateString();
+                                    }
                                 } else {
                                     // Move the attribute over
                                     obj[attributeToAdd.id] = item[attributeToAdd.id];
