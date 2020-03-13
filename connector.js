@@ -21,7 +21,7 @@
             lng: 137.927428
         },
         {
-            locationName: "B-town City Hall",
+            locationName: "Beaverton City Hall",
             lat: 45.490096,
             lng: -122.807801
         },
