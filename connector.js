@@ -9,6 +9,11 @@
             locationName: "KHIO",
             lat: 45.535122,
             lng: -122.948361
+        },
+        {
+            locationName: "Civic Center",
+            lat: 45.522203,
+            lng: -122.989419
         }
     ];
     
